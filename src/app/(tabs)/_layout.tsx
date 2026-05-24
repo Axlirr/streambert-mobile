@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -12,14 +12,14 @@ export default function TabLayout() {
       },
       tabBarActiveTintColor: '#E50914',
       tabBarInactiveTintColor: '#666',
-      tabBarShowLabel: false,
+      tabBarShowLabel: true,
     }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
-            <SymbolView name="house.fill" tintColor={color} size={28} fallback={<></>} />
+            <Ionicons name="home" color={color} size={28} />
           ),
         }}
       />
@@ -28,7 +28,7 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => (
-            <SymbolView name="magnifyingglass" tintColor={color} size={28} fallback={<></>} />
+            <Ionicons name="search" color={color} size={28} />
           ),
         }}
       />
