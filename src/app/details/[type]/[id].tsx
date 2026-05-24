@@ -11,6 +11,9 @@ export default function DetailsScreen() {
   const { type, id } = useLocalSearchParams();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [episodes, setEpisodes] = useState([]);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
 
   useEffect(() => {
     fetchDetails();
@@ -20,10 +23,31 @@ export default function DetailsScreen() {
     try {
       const data = await tmdbFetch(`/${type}/${id}`);
       setDetails(data);
+      if (type === 'tv' && data.seasons && data.seasons.length > 0) {
+        const validSeason = data.seasons.find(s => s.season_number > 0) || data.seasons[0];
+        setSelectedSeason(validSeason.season_number);
+      }
     } catch (e) {
       console.log(e);
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    if (type === 'tv' && selectedSeason !== null) {
+      fetchSeasonEpisodes(selectedSeason);
+    }
+  }, [selectedSeason, type]);
+
+  const fetchSeasonEpisodes = async (seasonNum) => {
+    setEpisodesLoading(true);
+    try {
+      const data = await tmdbFetch(`/tv/${id}/season/${seasonNum}`);
+      setEpisodes(data.episodes || []);
+    } catch (e) {
+      console.log(e);
+    }
+    setEpisodesLoading(false);
   };
 
   if (loading) {
@@ -48,8 +72,7 @@ export default function DetailsScreen() {
     if (type === 'movie') {
       router.push(`/player?type=movie&id=${id}`);
     } else {
-      // Default to Season 1 Episode 1 for TV shows for now
-      router.push(`/player?type=tv&id=${id}&s=1&e=1`);
+      router.push(`/player?type=tv&id=${id}&s=${selectedSeason}&e=1`);
     }
   };
 
@@ -84,6 +107,51 @@ export default function DetailsScreen() {
         <View style={styles.glassCard}>
           <Text style={styles.overview}>{details.overview}</Text>
         </View>
+
+        {type === 'tv' && details.seasons && (
+          <View style={styles.seasonsContainer}>
+            <Text style={styles.sectionTitle}>EPISODES</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.seasonScroll}>
+              {details.seasons.filter(s => s.season_number > 0).map(season => (
+                <TouchableOpacity 
+                  key={season.id} 
+                  style={[styles.seasonPill, selectedSeason === season.season_number && styles.seasonPillActive]}
+                  onPress={() => setSelectedSeason(season.season_number)}
+                >
+                  <Text style={[styles.seasonPillText, selectedSeason === season.season_number && styles.seasonPillTextActive]}>
+                    Season {season.season_number}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {episodesLoading ? (
+              <ActivityIndicator size="small" color="#E50914" style={{ marginTop: 20 }} />
+            ) : (
+              <View style={styles.episodesList}>
+                {episodes.map(ep => (
+                  <TouchableOpacity 
+                    key={ep.id} 
+                    style={styles.episodeCard}
+                    activeOpacity={0.7}
+                    onPress={() => router.push(`/player?type=tv&id=${id}&s=${selectedSeason}&e=${ep.episode_number}`)}
+                  >
+                    <Image 
+                      source={{ uri: imgUrl(ep.still_path, 'w500') || 'https://via.placeholder.com/300x170?text=No+Image' }}
+                      style={styles.episodeImage}
+                      contentFit="cover"
+                    />
+                    <View style={styles.episodeInfo}>
+                      <Text style={styles.episodeNumber}>E{ep.episode_number}</Text>
+                      <Text style={styles.episodeTitle} numberOfLines={1}>{ep.name}</Text>
+                      <Text style={styles.episodeOverview} numberOfLines={2}>{ep.overview || "No description available."}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -171,5 +239,73 @@ const styles = StyleSheet.create({
     color: '#DDD',
     fontSize: 15,
     lineHeight: 24,
+  },
+  seasonsContainer: {
+    marginTop: 40,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFF',
+    marginBottom: 16,
+    letterSpacing: 1,
+  },
+  seasonScroll: {
+    marginBottom: 20,
+  },
+  seasonPill: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#1F2833',
+    marginRight: 10,
+  },
+  seasonPillActive: {
+    backgroundColor: '#E50914',
+  },
+  seasonPillText: {
+    color: '#AAA',
+    fontWeight: 'bold',
+  },
+  seasonPillTextActive: {
+    color: '#FFF',
+  },
+  episodesList: {
+    gap: 16,
+  },
+  episodeCard: {
+    flexDirection: 'row',
+    backgroundColor: '#151A22',
+    borderRadius: 12,
+    overflow: 'hidden',
+    height: 100,
+    borderWidth: 1,
+    borderColor: '#1F2833',
+  },
+  episodeImage: {
+    width: 150,
+    height: '100%',
+  },
+  episodeInfo: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'center',
+  },
+  episodeNumber: {
+    color: '#E50914',
+    fontWeight: 'bold',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  episodeTitle: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  episodeOverview: {
+    color: '#888',
+    fontSize: 12,
+    lineHeight: 16,
   },
 });
