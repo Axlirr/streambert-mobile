@@ -11,6 +11,7 @@ export default function HomeScreen() {
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [trendingTv, setTrendingTv] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     fetchAll();
@@ -18,6 +19,7 @@ export default function HomeScreen() {
 
   const fetchAll = async () => {
     setLoading(true);
+    setErrorMsg('');
     try {
       const [movies, tv] = await Promise.all([
         tmdbFetch('/trending/movie/day'),
@@ -27,6 +29,7 @@ export default function HomeScreen() {
       setTrendingTv(tv.results);
     } catch (err) {
       console.error(err);
+      setErrorMsg(err.message || "Failed to fetch from TMDB");
     }
     setLoading(false);
   };
@@ -64,6 +67,10 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {loading ? (
         <ActivityIndicator size="large" color="#E50914" style={{ marginTop: 100 }} />
+      ) : errorMsg ? (
+        <View style={{ padding: 40, alignItems: 'center' }}>
+          <Text style={{ color: '#E50914', fontSize: 18, textAlign: 'center' }}>{errorMsg}</Text>
+        </View>
       ) : (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
           {heroItem && (
