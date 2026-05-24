@@ -31,7 +31,11 @@ export default function HomeScreen() {
 
   const saveToken = async () => {
     if (!token.trim()) return;
-    await AsyncStorage.setItem('streambert_tmdbToken', token.trim());
+    try {
+      await AsyncStorage.setItem('streambert_tmdbToken', token.trim());
+    } catch (e) {
+      console.warn('Browser blocked AsyncStorage', e);
+    }
     setHasToken(true);
     fetchAll(token.trim());
   };
