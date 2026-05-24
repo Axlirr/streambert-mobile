@@ -66,7 +66,9 @@ function _releaseSlot() {
   }
 }
 
-export const tmdbFetch = async (path, apiKey) => {
+const HARDCODED_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhZTk1NGZkYjVkODRlZWRjMGIzZDEzMWJlMjNlZWNjNSIsIm5iZiI6MTc3OTM0OTY2My41ODcwMDAxLCJzdWIiOiI2YTBlYjg5ZjRlZDAxNzZmODEzMGM3YjMiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.2MaG-WRUVGh5scFA1zSGKtkrPNjDCKWYmHdbK56PbOw";
+
+export const tmdbFetch = async (path, apiKey = HARDCODED_TOKEN) => {
   const localizedPath = withLanguage(path);
   const cacheKey = `${apiKey}|${localizedPath}`;
   const cached = _tmdbCache.get(cacheKey);

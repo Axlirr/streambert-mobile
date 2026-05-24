@@ -11,14 +11,9 @@ export default function ExploreScreen() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
 
   useEffect(() => {
-    AsyncStorage.getItem('streambert_tmdbToken').then(t => t && setToken(t));
-  }, []);
-
-  useEffect(() => {
-    if (query.trim().length > 2 && token) {
+    if (query.trim().length > 2) {
       const delayDebounceFn = setTimeout(() => {
         searchTmdb(query);
       }, 500);
@@ -26,12 +21,12 @@ export default function ExploreScreen() {
     } else {
       setResults([]);
     }
-  }, [query, token]);
+  }, [query]);
 
   const searchTmdb = async (q) => {
     setLoading(true);
     try {
-      const data = await tmdbFetch(`/search/multi?query=${encodeURIComponent(q)}`, token);
+      const data = await tmdbFetch(`/search/multi?query=${encodeURIComponent(q)}`);
       const filtered = data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
       setResults(filtered);
     } catch (e) {

@@ -8,52 +8,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { tmdbFetch, imgUrl } from '@/utils/api';
 
 export default function HomeScreen() {
-  const [token, setToken] = useState('');
-  const [hasToken, setHasToken] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [trendingTv, setTrendingTv] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    checkToken();
+    fetchAll();
   }, []);
 
-  const checkToken = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('streambert_tmdbToken');
-      if (stored) {
-        setHasToken(true);
-        fetchAll(stored);
-      }
-    } catch (e) {}
-  };
-
-  const saveToken = async () => {
-    if (!token.trim()) return;
-    try {
-      await AsyncStorage.setItem('streambert_tmdbToken', token.trim());
-    } catch (e) {
-      console.warn('Browser blocked AsyncStorage', e);
-    }
-    setHasToken(true);
-    fetchAll(token.trim());
-  };
-
-  const fetchAll = async (apiKey) => {
+  const fetchAll = async () => {
     setLoading(true);
-    setError('');
     try {
       const [movies, tv] = await Promise.all([
-        tmdbFetch('/trending/movie/day', apiKey),
-        tmdbFetch('/trending/tv/day', apiKey)
+        tmdbFetch('/trending/movie/day'),
+        tmdbFetch('/trending/tv/day')
       ]);
       setTrendingMovies(movies.results);
       setTrendingTv(tv.results);
     } catch (err) {
-      setError('Invalid TMDB Token or network error.');
-      setHasToken(false);
-      AsyncStorage.removeItem('streambert_tmdbToken');
+      console.error(err);
     }
     setLoading(false);
   };
@@ -83,25 +56,7 @@ export default function HomeScreen() {
     </View>
   );
 
-  if (!hasToken) {
-    return (
-      <View style={[styles.container, styles.authContainer]}>
-        <Text style={styles.authHeader}>Welcome to Streambert</Text>
-        <Text style={styles.sub}>Enter your TMDB API Read Access Token to continue.</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="eyJhbGciOiJIUzI1NiJ..."
-          placeholderTextColor="#666"
-          value={token}
-          onChangeText={setToken}
-        />
-        {!!error && <Text style={styles.error}>{error}</Text>}
-        <TouchableOpacity style={styles.button} onPress={saveToken}>
-          <Text style={styles.buttonText}>Save & Start</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+
 
   const heroItem = trendingMovies[0];
 

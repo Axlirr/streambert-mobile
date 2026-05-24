@@ -18,11 +18,8 @@ export default function DetailsScreen() {
 
   const fetchDetails = async () => {
     try {
-      const token = await AsyncStorage.getItem('streambert_tmdbToken');
-      if (token) {
-        const data = await tmdbFetch(`/${type}/${id}`, token);
-        setDetails(data);
-      }
+      const data = await tmdbFetch(`/${type}/${id}`);
+      setDetails(data);
     } catch (e) {
       console.log(e);
     }
