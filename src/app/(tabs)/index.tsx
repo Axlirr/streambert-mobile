@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   heroContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: Platform.OS === 'web' ? 450 : 400,
     position: 'relative',
     marginBottom: 20,
   },
@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
   },
   hCard: {
     width: 140,
+    height: 210,
     marginHorizontal: 6,
     borderRadius: 12,
     overflow: 'hidden',
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   },
   hPoster: {
     width: '100%',
-    aspectRatio: 2 / 3,
+    height: '100%',
     borderRadius: 12,
   },
 });
